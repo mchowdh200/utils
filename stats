@@ -1,0 +1,52 @@
+#!/usr/bin/env python3
+import sys
+import numpy as np
+import argparse
+
+parser = argparse.ArgumentParser()
+parser.add_argument('--title', '-t', dest='title', 
+                    type=str, default=None, required=False,
+                    help='Plot title.')
+parser.add_argument('--threshold', '-th', dest='threshold', 
+                    type=float, default=np.inf, required=False,
+                    help='Remove data below the threshold.')
+parser.add_argument('-b', '--bins', dest='bins', type=int, required=False,
+                    default=10, help='# of bins for histogram')
+parser.add_argument('-a', '--ascii', dest='ascii', action='store_true', required=False)
+args = parser.parse_args()
+
+x = np.array([-int(val) for val in sys.stdin.read().split()])
+x = np.array([i for i in x if i < args.threshold])
+
+if args.ascii:
+    print(80*'-')
+    print(args.title)
+    print(80*'-')
+    hist, bin_edges = np.histogram(x, bins=args.bins)
+    min_ = np.min(hist)
+    max_ = np.max(hist)
+    for h, b in zip(hist, bin_edges):
+        print(f"{int(b)}:")
+        for i in range(int(np.interp(h, [min_, max_], [1, 80]))):
+            print('=', end='')
+        print(' '+str(h))
+
+else:
+    import matplotlib.pyplot as plt
+    import seaborn as sns
+
+    # credit to https://stackoverflow.com/questions/33381330/histogram-with-boxplot-above-in-python
+    # for the box plot overlayed with histogram.  Also used 
+    # https://seaborn.pydata.org/tutorial/distributions.html for reference.
+    sns.set(style="ticks")
+    f, (ax_box, ax_hist) = plt.subplots(
+        2, sharex=True, gridspec_kw={"height_ratios": (0.15, 0.85)})
+
+    sns.boxplot(x, ax=ax_box)
+    sns.distplot(x, ax=ax_hist, bins=args.bins, kde=False, rug=True)
+    sns.despine(ax=ax_hist)
+    sns.despine(ax=ax_box, left=True)
+
+    if args.title:
+        ax_box.set_title(args.title)
+    plt.show()
