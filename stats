@@ -15,7 +15,7 @@ parser.add_argument('-b', '--bins', dest='bins', type=int, required=False,
 parser.add_argument('-a', '--ascii', dest='ascii', action='store_true', required=False)
 args = parser.parse_args()
 
-x = np.array([int(val) for val in sys.stdin.read().split()])
+x = np.array([float(val) for val in sys.stdin.read().split()])
 x = np.array([i for i in x if i < args.threshold])
 
 if args.ascii:
