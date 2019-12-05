@@ -1,0 +1,74 @@
+#!/usr/bin/env python3
+import sys
+import argparse
+import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.preprocessing import RobustScaler
+
+parser = argparse.ArgumentParser()
+
+parser.add_argument('-t', '--title', dest='title',
+                    type=str, default=None, required=False,
+                    help='Plot title.')
+parser.add_argument('-x', '--x-label', dest='x_label', 
+                    type=str, default=None, required=False,
+                    help='x-axis label.')
+parser.add_argument('-y', '--y-label', dest='y_label', 
+                    type=str, default=None, required=False,
+                    help='Plot title.')
+parser.add_argument('-s', '--saveto', dest='saveto', type=str, 
+                    required=False, default=None)
+
+parser.add_argument('--xmin', dest='xmin', type=float, default=-np.inf, 
+                    required=False)
+parser.add_argument('--xmax', dest='xmax', type=float, default=np.inf, 
+                    required=False)
+parser.add_argument('--ymin', dest='ymin', type=float, default=-np.inf, 
+                    required=False)
+parser.add_argument('--ymax', dest='ymax', type=float, default=np.inf, 
+                    required=False)
+
+parser.add_argument('--standardize', dest='standardize', action='store_true')
+
+args = parser.parse_args()
+
+A = np.loadtxt(sys.stdin)
+
+if args.standardize:
+    # xmean = np.mean(A[:, 0])
+    # xstd = np.std(A[:, 0])
+    # ymean = np.mean(A[:, 1])
+    # ystd = np.std(A[:, 1])
+    # A = A[
+    #     np.logical_and(
+    #         np.logical_and(
+    #             A[:, 0] < xmean + 2*xstd,
+    #             A[:, 0] > xmean - 2*xstd)
+    #         np.logical_and(
+    #             A[:, 1] < ymean + 2*ystd,
+    #             A[:, 1] > ymean - 2*ystd)
+    #     )
+    # ]
+    A = RobustScaler().fit_transform(A)
+
+x = A[:, 0]
+y = A[:, 1]
+
+
+# if args.standardize:
+#     x = (x - np.mean(x))/np.std(x)
+#     y = (y - np.mean(y))/np.std(y)
+
+if args.xmin > -np.inf: xmin = args.xmin
+else: xmin = min(x)
+if args.xmax < np.inf: xmax = args.xmax
+else: xmax = max(x)
+if args.ymin > -np.inf: ymin = args.ymin
+else: ymin = min(y)
+if args.ymax < np.inf: ymax = args.ymax
+else: ymax = max(y)
+plt.xlim([xmin, xmax])
+plt.ylim([ymin, ymax])
+
+plt.scatter(x, y, s=2)
+plt.show()

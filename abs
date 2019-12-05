@@ -3,5 +3,4 @@ import sys
 import numpy as np
 
 for val in sys.stdin:
-    # print(val)
     print(np.abs(float(val.rstrip())))

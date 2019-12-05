@@ -1,0 +1,76 @@
+#!/usr/bin/env python3
+import sys
+import argparse
+import numpy as np
+
+parser = argparse.ArgumentParser()
+
+parser.add_argument('-t', '--title', dest='title', 
+                    type=str, default=None, required=False,
+                    help='Plot title.')
+parser.add_argument('-x', '--x-label', dest='x_label', 
+                    type=str, default=None, required=False,
+                    help='x-axis label.')
+parser.add_argument('-y', '--y-label', dest='y_label', 
+                    type=str, default=None, required=False,
+                    help='Plot title.')
+parser.add_argument('--xmin', dest='xmin', type=float, default=-np.inf, 
+                    required=False)
+parser.add_argument('--xmax', dest='xmax', type=float, default=np.inf, 
+                    required=False)
+parser.add_argument('-a', '--ascii', dest='ascii', action='store_true', 
+                    required=False)
+parser.add_argument('-b', '--bins', dest='bins', type=int, required=False,
+                    default=10, help='# of bins for histogram')
+parser.add_argument('-l', '--log-scale', dest='log_scale', 
+                    action='store_true')
+parser.add_argument('-s', '--saveto', dest='saveto', type=str, 
+                    required=False, default=None)
+
+
+args = parser.parse_args()
+
+x = np.array([float(val) for val in sys.stdin.read().split()])
+x = np.array([i for i in x if args.xmin < i < args.xmax])
+
+if args.ascii:
+    # TODO add log scale ascii histogram
+    print(80*'-')
+    print(args.title)
+    print(80*'-')
+    hist, bin_edges = np.histogram(x, bins=args.bins)
+    min_ = np.min(hist)
+    max_ = np.max(hist)
+    for h, b in zip(hist, bin_edges):
+        print(f"{int(b)}:")
+        for i in range(int(np.interp(h, [min_, max_], [1, 80]))):
+            print('=', end='')
+        print(' '+str(h))
+
+else:
+    import matplotlib.pyplot as plt
+    import seaborn as sns
+    
+    if args.log_scale:
+        bins = np.logspace(min(np.log10(x)), max(np.log10(x)), args.bins)
+        plt.xscale('log')
+        plt.xlabel('')
+    else:
+        bins = np.linspace(min(x), max(x), args.bins)
+    sns.set(style="ticks")
+    sns.distplot(x, bins=bins, kde=False, rug=False)
+    # plt.xticks(bins, rotation=45)
+    plt.title(args.title)
+    plt.xlabel(args.x_label)
+    plt.ylabel(args.y_label)
+
+    if args.xmin > -np.inf: xmin = args.xmin
+    else: xmin = min(x)
+    if args.xmax < np.inf: xmax = args.xmax
+    else: xmax = max(x)
+    plt.xlim([xmin, xmax])
+
+    if args.saveto:
+        plt.savefig(args.saveto)
+    else:
+        plt.show()
