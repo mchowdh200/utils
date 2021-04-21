@@ -26,7 +26,7 @@ rule GetFai:
 
 rule RunCovviz:
     input:
-        indices = expand('{index}', index=index_files.keys()),
+        indices = expand('{index}', index=list(index_files.keys())),
         fai = rules.GetFai.output
     output:
         f'{config["outdir"]}/covviz_report.html'
