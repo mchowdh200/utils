@@ -9,7 +9,7 @@ index_files = {f'{config["outdir"]}/{os.path.basename(url)}': url
 
 rule All:
     output:
-        f'{config["outdir"]}/covviz_report.html'
+        rules.RunCovviz.output
 
 rule GetIndex:
     output:
