@@ -7,9 +7,6 @@ index_urls = [f.rstrip() for f in open(config['bam_index_list']).readlines()]
 index_files = {f'{config["outdir"]}/{os.path.basename(url)}': url
                for url in index_urls}
 
-rule All:
-    output:
-        rules.RunCovviz.output
 
 rule GetIndex:
     output:
@@ -38,3 +35,7 @@ rule RunCovviz:
                --fai {config["ref_index"]} \\
                --output {{output}}'
         """
+
+rule All:
+    output:
+        rules.RunCovviz.output
