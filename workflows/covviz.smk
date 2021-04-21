@@ -1,41 +1,60 @@
 import os
 configfile: 'conf/covviz.yaml'
 
+# load the list of alignment indices (s3 uris)
 index_urls = [f.rstrip() for f in open(config['bam_index_list']).readlines()]
+url_dict = {os.path.basename(url): url for url in index_urls}
+indices = list(url_dict.keys())
 
-# list of urls keyed by the destination file
-index_files = {f'{config["outdir"]}/{os.path.basename(url)}': url
-               for url in index_urls}
+outdir = config['outdir']
 
+rule All:
+    input:
+       f'{outdir}/covviz_report.html'
 
 rule GetIndex:
     output:
-        index = temp('{index}')
-    run:
-        url = index_files[output.index]
-        shell(f'aws s3 cp {url} {{output.index}}')
+        temp(f'{outdir}/{{index}}')
+    params:
+        url = lambda w: url_dict[w.index]
+    shell:
+        """
+        aws s3 cp {params.url} {output}
+        """
 
 rule GetFai:
     output:
-        f'{config["outdir"]}/ref.fa.fai'
+        temp(f'{outdir}/ref.fa.fai')
+    params:
+        url = config['ref_index']
     shell:
-        f'aws s3 cp {config["ref_index"]} {{output}}'
+        'aws s3 cp {params.url} {output}'
 
-rule RunCovviz:
+rule GoleftIndexcov:
     input:
-        indices = expand('{index}', index=list(index_files.keys())),
-        fai = rules.GetFai.output
+        crai = expand(f'{outdir}/{{index}}', index=indices),
+        fai = f'{outdir}/ref.fa.fai'
     output:
-        f'{config["outdir"]}/covviz_report.html'
+        f'{outdir}/goleft/goleft-indexcov.bed.gz'
     conda:
         'envs/covviz.yaml'
     shell:
         f"""
-        covviz --indexes '{config["outdir"]}/*.{config["index_extension"]} \\
-               --fai {config["ref_index"]} \\
-               --output {{output}}'
+        goleft indexcov --extranormalize \\
+               --directory {outdir}/goleft \\
+               --fai {{input.fai}} \\
+               {{input.crai}}
         """
 
-rule All:
+rule Covviz:
+    input:
+        f'{outdir}/goleft/goleft-indexcov.bed.gz'
     output:
-        rules.RunCovviz.output
+        f'{outdir}/covviz_report.html'
+    conda:
+        'envs/covviz.yaml'
+    shell:
+        f"""
+        covviz --output {{output}} {{input}}
+        """
+
