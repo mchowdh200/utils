@@ -1,0 +1,9 @@
+name: covviz
+channels:
+  - bioconda
+  - conda-forge
+dependencies:
+  - goleft
+  - pip
+  - pip:
+      - covviz

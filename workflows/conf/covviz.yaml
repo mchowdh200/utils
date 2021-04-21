@@ -1,0 +1,9 @@
+# list of s3 urls
+bam_index_list:
+
+index_extension: "crai"
+
+ref_index:
+
+
+outdir:
