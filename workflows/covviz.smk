@@ -4,7 +4,7 @@ configfile: 'conf/covviz.yaml'
 index_urls = [f.rstrip() for f in open(config['bam_index_list']).readlines()]
 
 # list of urls keyed by the destination file
-index_files = {f'{config["outdir"]}/os.path.basename(url)': url
+index_files = {f'{config["outdir"]}/{os.path.basename(url)}': url
                for url in index_urls}
 
 rule All:
