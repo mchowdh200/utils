@@ -1,0 +1,23 @@
+#!/bin/env bash
+## Syncs a git repo over scp to a remote server
+usage() {
+  >&2 echo "Usage: repo-sync <target>"
+  >&2 echo "\tExample: repo-sync user@server"
+  >&2 echo "\trsyncs's the current git repo to user@server:~/Repositories/\$repo_path"
+  exit 1
+}
+
+set -e
+
+target=$1
+repo_path=$(git rev-parse --show-toplevel)
+
+if [ -z "$target" ]; then
+    usage;
+fi
+
+rsync -av \
+    --exclude='.git' \
+    --exclude='.gitmodules' \
+    "$repo_path" \
+    "${target}:~/Repositories/${repo_path}"
