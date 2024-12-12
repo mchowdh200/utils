@@ -1,6 +1,6 @@
-#!/bin/env bash
+#!/usr/bin/env bash
 ## Syncs a git repo over scp to a remote server
-usage() {
+function usage() {
   >&2 echo "Usage: repo-sync <target>"
   >&2 echo "\tExample: repo-sync user@server"
   >&2 echo "\trsyncs's the current git repo to user@server:~/Repositories/\$repo_path"
@@ -16,8 +16,14 @@ if [ -z "$target" ]; then
     usage;
 fi
 
+# TODO maybe make a .gigignore and parse that to get the excludes
 rsync -av \
     --exclude='.git' \
     --exclude='.gitmodules' \
+    --exclude='CMakeCache.txt' \
+    --exclude='CMakeFiles' \
+    --exclude='_deps' \
+    --exclude='*.cmake' \
+    --exclude='*.a' \
     "$repo_path" \
-    "${target}:~/Repositories/${repo_path}"
+    "${target}:~/Repositories/"
