@@ -13,7 +13,11 @@ target=$1
 repo_path=$(git rev-parse --show-toplevel)
 
 if [ -z "$target" ]; then
-    usage;
+    hosts=$(grep -E '^Host ' ~/.ssh/config | awk '{print $2}');
+    target=$(fzf --prompt="Select a sync host: " --layout reverse <<< "$hosts")
+fi
+if [ -z "$target" ]; then
+    usage
 fi
 
 # TODO maybe make a .gigignore and parse that to get the excludes
@@ -25,5 +29,7 @@ rsync -av \
     --exclude='_deps' \
     --exclude='*.cmake' \
     --exclude='*.a' \
+    --exclude='*.egg-info' \
+    --exclude='__pycache__' \
     "$repo_path" \
     "${target}:~/Repositories/"
