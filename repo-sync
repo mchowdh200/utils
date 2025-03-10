@@ -31,5 +31,6 @@ rsync -av \
     --exclude='*.a' \
     --exclude='*.egg-info' \
     --exclude='__pycache__' \
+    --filter=':- .gitignore' \
     "$repo_path" \
     "${target}:~/Repositories/"
